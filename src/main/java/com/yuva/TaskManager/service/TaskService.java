@@ -1,6 +1,7 @@
 package com.yuva.TaskManager.service;
 
 import com.yuva.TaskManager.Dto.TaskDto;
+import com.yuva.TaskManager.exceptions.TaskNotFoundException;
 import com.yuva.TaskManager.model.Project;
 import com.yuva.TaskManager.model.Task;
 import com.yuva.TaskManager.repository.TaskRepo;
@@ -31,8 +32,22 @@ public class TaskService {
         return taskDtos;
     }
 
-    public TaskDto getTaskById(int id) {
-        Task task = taskRepo.findById(id).orElse(null);
+    public List<TaskDto> getAllTasksByUserId(int userId) {
+        List<Task> tasks = taskRepo.findAllByProjectUserId(userId);
+        List<TaskDto> taskDtos = new ArrayList<>();
+
+        for (Task task : tasks) {
+            TaskDto taskDto = new TaskDto(task.getId(), task.getTitle(), task.getDescription(), task.getPriority(), task.getStatus(), task.getDueDate(), task.getProject().getId());
+            taskDtos.add(taskDto);
+        }
+        return taskDtos;
+    }
+
+    public Task getTaskById(int id) {
+        return taskRepo.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found: " + id));
+    }
+    public TaskDto getTaskDtoById(int id) {
+        Task task = taskRepo.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found: " + id));
         if (task != null) {
             return new TaskDto(task.getId(), task.getTitle(), task.getDescription(), task.getPriority(), task.getStatus(), task.getDueDate(), task.getProject().getId());
         } else {
@@ -49,8 +64,8 @@ public class TaskService {
     }
 
 
-    public Task updateTask(TaskDto taskDto) {
-        Task existingTask = taskRepo.findById(taskDto.id()).orElse(null);
+    public Task updateTask(int id, TaskDto taskDto) {
+        Task existingTask = taskRepo.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found: " + id));
         if (existingTask != null) {
             existingTask.setTitle(taskDto.title());
             existingTask.setDescription(taskDto.description());

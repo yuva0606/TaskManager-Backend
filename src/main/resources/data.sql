@@ -1,6 +1,6 @@
 INSERT INTO users (id, username, password) VALUES
-(1, 'yuva', 'password1'),
-(2, 'alex', 'password2');
+(1, 'yuva', '$2a$10$ztCYKOR1x8iR2IJNL/Ub7uvXzfw13F/stt83VtD/s7y3ecfUo4fD6'),
+(2, 'jas', '$2a$10$Y5N.GVqGHHIHsO6TptfQNef1VkQ6jlYVv2lx9BxMpYGZ1YjLNz1Le');
 
 INSERT INTO projects (id, name, user_id) VALUES
 (1, 'React Learning', 1),

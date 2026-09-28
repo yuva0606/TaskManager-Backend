@@ -1,7 +1,6 @@
 package com.yuva.TaskManager.service;
 
 import com.yuva.TaskManager.Dto.ProjectDto;
-import com.yuva.TaskManager.exceptions.ProjectNotFoundException;
 import com.yuva.TaskManager.model.Project;
 import com.yuva.TaskManager.repository.ProjectRepo;
 import com.yuva.TaskManager.repository.TaskRepo;
@@ -45,7 +44,7 @@ public class ProjectService {
     }
 
     public Project getProjectByIdAndUserId(int projectId, int userId) {
-        return projectRepo.findByIdAndUser_Id(projectId, userId).orElseThrow(() -> new ProjectNotFoundException("Project not found: " + projectId));
+        return projectRepo.findByIdAndUser_Id(projectId, userId).get().;
     }
 
     public ProjectDto createProject(Project project) {
@@ -62,13 +61,13 @@ public class ProjectService {
     }
 
     public ProjectDto getProjectDtoById(int id) {
-        Project project = projectRepo.findById(id).orElseThrow(() -> new ProjectNotFoundException("Project not found: " + id));
+        Project project = projectRepo.findById(id).orElse(null);
 
         return new ProjectDto(project.getId(), project.getName());
     }
 
     public Project getProjectById(int id) {
-        return projectRepo.findById(id).orElseThrow(() -> new ProjectNotFoundException("Project not found: " + id));
+        return projectRepo.findById(id).orElse(null);
     }
 
     @Transactional

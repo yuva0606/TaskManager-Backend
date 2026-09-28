@@ -1,0 +1,2 @@
+package com.yuva.TaskManager.Dto;public record ErrorResponse() {
+}
