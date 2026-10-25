@@ -39,4 +39,13 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(new ErrorResponse(400, message));
     }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(
+            InvalidRefreshTokenException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(401, ex.getMessage()));
+    }
 }

@@ -7,7 +7,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 
 @Service
@@ -27,7 +32,7 @@ public class JwtService {
         String JWT = Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60))
                 .signWith(getKey())
                 .compact();
 
@@ -35,6 +40,31 @@ public class JwtService {
 //        System.out.println(username2);
 
         return JWT;
+    }
+
+    public String generateRefreshToken() {
+        byte[] randomBytes = new byte[32];
+
+        new SecureRandom().nextBytes(randomBytes);
+
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(randomBytes);
+    }
+
+    public String hashRefreshToken(String refreshToken) {
+        try {
+            MessageDigest digest =
+                    MessageDigest.getInstance("SHA-256");
+
+            byte[] hash =
+                    digest.digest(refreshToken.getBytes(StandardCharsets.UTF_8));
+
+            return Base64.getEncoder().encodeToString(hash);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 
@@ -47,6 +77,4 @@ public class JwtService {
                 .getPayload()
                 .getSubject();
     }
-
-
 }

@@ -1,0 +1,87 @@
+package com.yuva.TaskManager.service;
+
+import com.yuva.TaskManager.exceptions.InvalidRefreshTokenException;
+import com.yuva.TaskManager.model.User;
+import com.yuva.TaskManager.repository.UserRepo;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.Optional;
+
+@Service
+public class UserService {
+    private UserRepo userRepo;
+    private JwtService jwtService;
+
+    public UserService(UserRepo userRepo, JwtService jwtService) {
+        this.jwtService = jwtService;
+        this.userRepo = userRepo;
+    }
+
+    public void saveRefreshToken(
+            String username,
+            String refreshToken,
+            Date expiry) {
+
+        User user = userRepo.findByUsername(username);
+
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpiry(expiry);
+
+        userRepo.save(user);
+    }
+
+    public User validateRefreshToken(String refreshToken) {
+
+        String refreshTokenHash =
+                jwtService.hashRefreshToken(refreshToken);
+
+        User user =
+                userRepo.findByRefreshToken(refreshTokenHash);
+
+        if (user == null) {
+            throw new InvalidRefreshTokenException(
+                    "Invalid refresh token"
+            );
+        }
+
+        if (user.getRefreshTokenExpiry().before(new Date())) {
+            throw new InvalidRefreshTokenException(
+                    "Refresh token expired"
+            );
+        }
+
+        return user;
+    }
+
+    public User findOrCreateGoogleUser(
+            String googleSubject,
+            String email) {
+
+        // 1. Check whether this Google account already exists.
+        Optional<User> existingGoogleUser =
+                userRepo.findByGoogleSubject(googleSubject);
+
+        if (existingGoogleUser.isPresent()) {
+            return existingGoogleUser.get();
+        }
+
+        // 2. Check whether this email already belongs to an account.
+        User existingEmailUser = userRepo.findByUsername(email);
+
+        if (existingEmailUser != null) {
+            throw new IllegalStateException(
+                    "An account with this email already exists. " +
+                            "Account linking is required."
+            );
+        }
+
+        // 3. Create a new Google-only account.
+        User user = new User();
+        user.setUsername(email);
+        user.setPassword(null);
+        user.setGoogleSubject(googleSubject);
+
+        return userRepo.save(user);
+    }
+}
